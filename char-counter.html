@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>글자 수 세기</title>
+  <style>
+    :root {
+      --green: #03c75a;
+      --green-press: #02b351;
+      --green-tint: rgba(3, 199, 90, 0.14);
+      --bg: #f2f2f7;
+      --card: #ffffff;
+      --text: #000000;
+      --sub: #8e8e93;
+      --line: #e5e5ea;
+      --red: #ff3b30;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+      font-size: 17px;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    .top-inner, .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    h1 {
+      margin: 0;
+      padding: 44px 4px 10px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--green);
+    }
+    .wrap { padding-bottom: 40px; }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .card + .card { margin-top: 16px; }
+    .card:focus-within { box-shadow: 0 0 0 2px var(--green); }
+    textarea {
+      display: block;
+      width: 100%;
+      height: 200px;
+      padding: 14px 16px;
+      font: inherit;
+      line-height: 1.45;
+      color: var(--text);
+      caret-color: var(--green);
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: vertical;
+    }
+    textarea::placeholder, #limit::placeholder { color: #c7c7cc; }
+    #result { padding-left: 16px; }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 48px;
+      padding: 10px 16px 10px 0;
+    }
+    .row + .row { border-top: 1px solid var(--line); }
+    .row.hint { color: var(--sub); }
+    .value { color: var(--sub); }
+    .value strong {
+      margin-right: 2px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .value strong.over { color: var(--red); }
+    .limit-row { padding-left: 16px; }
+    #limit {
+      flex: 1;
+      min-width: 0;
+      margin-left: 12px;
+      padding: 0;
+      font: inherit;
+      text-align: right;
+      color: var(--text);
+      caret-color: var(--green);
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      flex: 1;
+      height: 50px;
+      padding: 0 12px;
+      font: inherit;
+      font-weight: 600;
+      border: none;
+      border-radius: 14px;
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: var(--green-press); }
+    button:active { opacity: 0.7; }
+    #clearBtn {
+      background: var(--green-tint);
+      color: var(--green-press);
+    }
+    #clearBtn:hover { background: rgba(3, 199, 90, 0.22); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <h1>글자 수 세기</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="card">
+      <textarea id="input" placeholder="여기에 글을 입력하세요"></textarea>
+    </div>
+    <div class="card">
+      <div class="row limit-row">
+        <label for="limit">제한 글자 수</label>
+        <input type="number" id="limit" min="0" placeholder="예: 500">
+      </div>
+    </div>
+    <div class="card" id="result"><div class="row hint">결과가 여기에 표시됩니다.</div></div>
+    <div class="controls">
+      <button id="countBtn">글자 수 세기</button>
+      <button id="clearBtn">전체 지우기</button>
+    </div>
+  </main>
+
+  <script>
+    const input = document.getElementById("input");
+    const button = document.getElementById("countBtn");
+    const result = document.getElementById("result");
+    const limitInput = document.getElementById("limit");
+    const clearButton = document.getElementById("clearBtn");
+
+    function updateCount() {
+      const text = input.value;
+      // Array.from을 쓰면 이모지처럼 두 칸을 차지하는 문자도 한 글자로 셉니다.
+      const total = Array.from(text).length;
+      const noSpaces = Array.from(text.replace(/\s/g, "")).length;
+
+      // 제한 칸이 비어 있으면 제한이 없는 것으로 봅니다.
+      const limit = Number(limitInput.value);
+      const hasLimit = limitInput.value.trim() !== "" && Number.isFinite(limit) && limit >= 0;
+      // 제한을 넘은 숫자에만 빨간색(over)을 입힙니다.
+      const totalClass = hasLimit && total > limit ? ' class="over"' : "";
+      const noSpacesClass = hasLimit && noSpaces > limit ? ' class="over"' : "";
+
+      result.innerHTML =
+        '<div class="row"><span>공백 포함</span><span class="value"><strong' + totalClass + ">" + total + "</strong>자</span></div>" +
+        '<div class="row"><span>공백 제외</span><span class="value"><strong' + noSpacesClass + ">" + noSpaces + "</strong>자</span></div>";
+    }
+
+    button.addEventListener("click", updateCount);
+    // 입력 칸 내용이 바뀔 때마다(입력, 삭제, 붙여넣기 등) 바로 다시 셉니다.
+    input.addEventListener("input", updateCount);
+    // 제한 글자 수를 바꿔도 색이 바로 반영되도록 다시 셉니다.
+    limitInput.addEventListener("input", updateCount);
+    // 전체 지우기: 입력 칸을 비우고 글자 수를 다시 세어 0으로 만듭니다.
+    clearButton.addEventListener("click", function () {
+      input.value = "";
+      updateCount();
+    });
+  </script>
+</body>
+</html>
